@@ -1,0 +1,7 @@
+# depslib dependency file v1.0
+1670525872 source:c:\users\lango\onedrive - uniwersytet im. adama mickiewicza w poznaniu\c\microshell\main.c
+	<stdio.h>
+	<string.h>
+	<stdlib.h>
+	<unistd.h>
+
