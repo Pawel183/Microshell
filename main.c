@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <unistd.h> // cuserid, getcwd, chdir(getenv)
 #include <dirent.h> // ls
+#include <pwd.h>
 #define CYN   "\x1B[36m"
 #define RED   "\x1B[31m"
 #define RESET "\x1B[0m"
@@ -10,10 +11,20 @@
 #define GRN   "\x1B[32m"
 #define TRUE 1
 
+#include <sys/types.h>
+#include <sys/stat.h>
+int isDir(const char* fileName)
+{
+    struct stat path;
+    stat(fileName, &path);
+    return S_ISREG(path.st_mode);
+}
+
 void Help();
 void Pwd();
 void Touch();
-void Cat();
+int Cat();
+void Head();
 void Rm();
 void Ls(int a);
 void Echo();
@@ -23,6 +34,8 @@ void History();
 char history[25][25];
 char sciezka[100];
 char user[25];
+extern char *cuserid(char *);
+FILE *fp;
 
 int i=0;
 
@@ -35,6 +48,7 @@ int main() {
         char polecenie[100];
         scanf("%s",polecenie);
         strcpy(history[i], polecenie);
+        //scanf("%[^\n]",polecenie);
 
         if (strcmp(polecenie, "help") == 0){
             Help();
@@ -83,28 +97,64 @@ void Touch(){
     char touch[50];
     scanf("%s",touch);
     strcat(strcat(history[i], " "), touch);
-    FILE *fp;
+    //FILE *fp;
     fp = fopen(touch, "w");
+
 }
 
-void Cat(){
+int Cat(){
     char cat[50];
     scanf("%s",cat);
     strcat(strcat(history[i], " "), cat);
-    FILE *fptr;
-    fptr = fopen(cat, "r");
-    if (fptr == NULL) {
-        printf("cat: %s: No such file or directory\n",cat);
-    } else {
-        char c;
-        c = fgetc(fptr);
-        while (c != EOF)
-        {
-            printf ("%c", c);
-            c = fgetc(fptr);
+    if (strcmp(cat,">") == 0){
+        char touch[50];
+        scanf("%s",touch);
+        strcat(strcat(history[i], " "), touch);
+        //FILE *fp;
+        fp = fopen(touch, "w");
+        FILE *plik = fopen(touch, "a");
+        char tekst[50];
+        while (TRUE){
+            scanf("%s", tekst);
+            if (strcmp(tekst, "EOF")==0) break;
+            fprintf(plik,"%s\n", tekst);
         }
-        fclose(fptr);
+        fclose(plik);
+    } else if (strcmp(cat,">>") == 0) {
+        char touch[50];
+        scanf("%s",touch);
+        strcat(strcat(history[i], " "), touch);
+        FILE *plik = fopen(touch, "a");
+        char tekst[50];
+        while (TRUE){
+            scanf("%s", tekst);
+            if (strcmp(tekst, "EOF")==0) break;
+            fprintf(plik,"%s\n", tekst);
+        }
+        fclose(plik);
+    } else {
+        int ret;
+        ret=isDir(cat);
+        if (ret==0) {
+            printf("cat: %s: Is a directory\n",cat);
+            return 0;
+        }
+        FILE *fptr;
+        fptr = fopen(cat, "r");
+        if (fptr == NULL) {
+            printf("cat: %s: No such file or directory\n",cat);
+        } else {
+            char c;
+            c = fgetc(fptr);
+            while (c != EOF)
+            {
+                printf ("%c", c);
+                c = fgetc(fptr);
+            }
+            fclose(fptr);
+        }
     }
+    return 0;
 }
 
 void Rm(){
@@ -146,7 +196,7 @@ char cd[50];
     scanf("%s",cd);
     strcat(strcat(history[i], " "), cd);
     if (strcmp(cd, "~") == 0) chdir(getenv("HOME"));
-//    else if (chdir(x) == -1) printf("cd: %s: No such file or directory\n",x);
+    //else if (chdir(cd) == -1) printf("cd: %s: No such file or directory\n",cd);
     else chdir(cd);
     getcwd(sciezka, sizeof(sciezka));
 }
@@ -154,5 +204,3 @@ char cd[50];
 void History(){
     for (int k=0; k<i; k++) printf("%s\n",history[k]);
 }
-
-
