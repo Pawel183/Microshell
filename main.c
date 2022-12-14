@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
-#include <unistd.h> // cuserid, getcwd, chdir(getenv)
-#include <dirent.h> // ls
+#include <unistd.h>
+#include <dirent.h>
 #include <pwd.h>
 #define CYN   "\x1B[36m"
 #define RED   "\x1B[31m"
@@ -22,9 +22,9 @@ int isDir(const char* fileName)
 
 void Help();
 void Pwd();
+void Pwd_2();
 void Touch();
 int Cat();
-void Head();
 void Rm();
 void Ls(int a);
 void Echo();
@@ -48,12 +48,12 @@ int main() {
         char polecenie[100];
         scanf("%s",polecenie);
         strcpy(history[i], polecenie);
-        //scanf("%[^\n]",polecenie);
 
         if (strcmp(polecenie, "help") == 0){
             Help();
         } else if (strcmp(polecenie, "pwd") == 0){
             Pwd(sciezka);
+            Pwd_2();
         } else if (strcmp(polecenie, "touch") == 0){
             Touch();
         } else if (strcmp(polecenie, "cat") == 0){
@@ -61,7 +61,7 @@ int main() {
         } else if (strcmp(polecenie, "rm") == 0){
             Rm();
         } else if (strcmp(polecenie, "ls") == 0) {
-            Ls(1);
+          Ls(1);
         } else if (strcmp(polecenie, "echo") == 0){
             Echo();
         } else if (strcmp(polecenie, "cd") == 0){
@@ -71,9 +71,19 @@ int main() {
         } else if (strcmp(polecenie, "exit") == 0){
             exit(1);
         } else if (strcmp(polecenie, "clear") == 0){
-            printf("\e[1;1H\e[2J"); // Using REGEX
+            printf("\e[1;1H\e[2J");
         } else {
-            printf("Blad polecenia: No such file or directory\n");
+            pid_t pid;
+            pid = fork();
+            char x[50]="/bin/";
+            strcat(x,polecenie);
+            if (pid == 0) {
+              execl(x, polecenie, NULL);
+              exit(0);
+            } else {
+              wait(NULL);
+            }
+            //printf("Blad polecenia: No such file or directory\n");
         }
         i++;
     }
@@ -93,11 +103,21 @@ void Pwd(){
     printf("%s\n", sciezka);
 }
 
+void Pwd_2(){
+    pid_t pid;
+    pid = fork();
+    if (pid == 0) {
+      execl("/bin/pwd", "pwd", NULL);
+      exit(0);
+    } else {
+      wait(NULL);
+    }
+}
+
 void Touch(){
     char touch[50];
     scanf("%s",touch);
     strcat(strcat(history[i], " "), touch);
-    //FILE *fp;
     fp = fopen(touch, "w");
 
 }
@@ -110,7 +130,6 @@ int Cat(){
         char touch[50];
         scanf("%s",touch);
         strcat(strcat(history[i], " "), touch);
-        //FILE *fp;
         fp = fopen(touch, "w");
         FILE *plik = fopen(touch, "a");
         char tekst[50];
@@ -135,14 +154,13 @@ int Cat(){
     } else {
         int ret;
         ret=isDir(cat);
-        if (ret==0) {
-            printf("cat: %s: Is a directory\n",cat);
-            return 0;
-        }
         FILE *fptr;
         fptr = fopen(cat, "r");
         if (fptr == NULL) {
             printf("cat: %s: No such file or directory\n",cat);
+        } else if (ret==0) {
+            printf("cat: %s: Is a directory\n",cat);
+            return 0;
         } else {
             char c;
             c = fgetc(fptr);
@@ -165,7 +183,7 @@ void Rm(){
 }
 
 void Ls(int a){
-    DIR *d;  //directory stream
+    DIR *d;
     struct dirent *dir;
     d = opendir(".");
     if ((d) && (a==0)) {
@@ -196,7 +214,7 @@ char cd[50];
     scanf("%s",cd);
     strcat(strcat(history[i], " "), cd);
     if (strcmp(cd, "~") == 0) chdir(getenv("HOME"));
-    //else if (chdir(cd) == -1) printf("cd: %s: No such file or directory\n",cd);
+    else if (chdir(cd) == -1) printf("cd: %s: No such file or directory\n",cd);
     else chdir(cd);
     getcwd(sciezka, sizeof(sciezka));
 }
