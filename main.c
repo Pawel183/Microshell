@@ -91,6 +91,7 @@ int main() {
             Touch(reszta);
         } else if (strcmp(polecenie, "cat") == 0){
             Cat(reszta);
+            continue;
         } else if (strcmp(polecenie, "rm") == 0){
             Rm(reszta);
         } else if (strcmp(polecenie, "ls") == 0) {
@@ -106,22 +107,35 @@ int main() {
         } else if (strcmp(polecenie, "clear") == 0){
             printf("\e[1;1H\e[2J"); // Using REGEX
         } else {
-            char *av[100];
-            char tab[]=" \n";
-            int z=0;
-            char *ptr = strtok(tekst, tab);
-            while(ptr != NULL)
-            {
-                av[z]=ptr;
-                z++;
-                ptr = strtok(NULL, tab);
+            pid_t pid = fork();
+            if (pid == 0) {
+                char *av[100];
+                char *token = strtok(tekst, " ");
+                int i = 0;
+                while (token != NULL)
+                {
+                  av[i] = token;
+                  token = strtok(NULL, " ");
+                  i++;
+                }
+                av[i] = NULL;
+
+                execvp(av[0], av);
+                exit(1);
+            } else if (pid > 0) {
+                int status;
+                waitpid(pid, &status, 0);
+                if (status != 0)
+                {
+                  printf("Error: błąd polecenia '%s'\n", tekst);
+                }
+              }
+              else
+              {
+                perror("fork");
+                exit(1);
+              }
             }
-            ptr[z]=NULL;
-            if(fork()==0){
-				exit(execvp(av[0],av));
-			}
-			else printf("Blad polecenia\n");
-        }
         i++;
     }
    return 0;
@@ -164,20 +178,20 @@ void Cat(char resztaStringa[]){
     if (strcmp(a,">") == 0){
         fp = fopen(b, "w");
         FILE *plik = fopen(b, "a");
-        char tekst[50];
+        char zdanie[50];
         while (TRUE){
-            scanf("%s", tekst);
-            if (strcmp(tekst, "EOF")==0) break;
-            fprintf(plik,"%s\n", tekst);
+            scanf("%s", zdanie);
+            if (strcmp(zdanie, "EOF")==0) break;
+            fprintf(plik,"%s\n", zdanie);
         }
         fclose(plik);
     } else if (strcmp(a,">>") == 0) {
         FILE *plik = fopen(b, "a");
-        char tekst[50];
+        char zdanie[50];
         while (TRUE){
-            scanf("%s", tekst);
-            if (strcmp(tekst, "EOF")==0) break;
-            fprintf(plik,"%s\n", tekst);
+            scanf("%s", zdanie);
+            if (strcmp(zdanie, "EOF")==0) break;
+            fprintf(plik,"%s\n", zdanie);
         }
         fclose(plik);
     } else {
