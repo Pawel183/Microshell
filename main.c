@@ -121,13 +121,11 @@ int main() {
                 {
                   printf("Error: błąd polecenia '%s'\n", tekst);
                 }
-              }
-              else
-              {
+            } else {
                 perror("fork");
                 exit(1);
-              }
             }
+        }
         i++;
     }
    return 0;
