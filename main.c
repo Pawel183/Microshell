@@ -28,11 +28,8 @@ int isDir(const char* fileName)
 }
 
 void Help();
-void Pwd();
-void Pwd_2();
 void Touch(char resztaStringa[]);
 void Cat(char resztaStringa[]);
-void Rm(char resztaStringa[]);
 void Ls(char resztaStringa[]);
 void Echo(char resztaStringa[]);
 void Cd(char resztaStringa[]);
@@ -71,29 +68,24 @@ void KopiujPoSpacji(char* dest, char* src) {
 int main() {
     getcwd(sciezka, sizeof(sciezka));
     cuserid(user);
-    char *tekst;
     char polecenie[100];
     char reszta[100];
 
     while(TRUE){
+        char tekst[100];
         printf("[" CYN "%s" RESET ":" RED "%s" RESET "]\n" GRN "$ " RESET,user,sciezka);
         fgets(tekst, 100, stdin);
         tekst[strcspn(tekst, "\n")] = 0;
         strcpy(history[i], tekst);
         KopiujDoSpacji(polecenie, tekst);
         KopiujPoSpacji(reszta, tekst);
-
         if (strcmp(polecenie, "help") == 0){
             Help();
-        } else if (strcmp(polecenie, "pwd") == 0){
-            Pwd(sciezka);
         } else if (strcmp(polecenie, "touch") == 0){
             Touch(reszta);
         } else if (strcmp(polecenie, "cat") == 0){
             Cat(reszta);
             continue;
-        } else if (strcmp(polecenie, "rm") == 0){
-            Rm(reszta);
         } else if (strcmp(polecenie, "ls") == 0) {
             Ls(reszta);
         } else if (strcmp(polecenie, "echo") == 0){
@@ -146,23 +138,7 @@ void Help(){
     printf("  Autor: P.Langowski  \n");
     printf("----------------------\n" RESET);
     printf("Obslugiwane funkcje:\n");
-    printf("help, pwd, touch, cat, rm, ls, echo, cd, history, exit, clear\n");
-}
-
-void Pwd(){
-    getcwd(sciezka, sizeof(sciezka));
-    printf("%s\n", sciezka);
-}
-
-void Pwd_2(){
-    pid_t pid;
-    pid = fork();
-    if (pid == 0) {
-      execl("/bin/pwd", "pwd", NULL);
-      exit(0);
-    } else {
-      wait(NULL);
-    }
+    printf("help, touch, cat, ls, echo, cd, history, exit, clear\n");
 }
 
 void Touch(char resztaStringa[]){
@@ -214,11 +190,6 @@ void Cat(char resztaStringa[]){
             fclose(fptr);
         }
     }
-}
-
-void Rm(char resztaStringa[]){
-    if (remove(resztaStringa) != 0)
-    printf("rm: cannot remove '%s': No such file or directory\n",resztaStringa);
 }
 
 void Ls(char resztaStringa[]){
