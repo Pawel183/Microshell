@@ -37,7 +37,7 @@ char user[100];
 extern char *cuserid(char *);
 FILE *fp;
 
-int i=0;
+int z=0;
 int k=0;
 
 void KopiujDoSpacji(char* dest, char* src) {
@@ -87,7 +87,7 @@ int main() {
         }
         tekstBezSpacji[j] = '\0';
         strcpy(tekst, tekstBezSpacji);
-        strcpy(history[i], tekst);
+        strcpy(history[z], tekst);
         KopiujDoSpacji(polecenie, tekst);
         KopiujPoSpacji(reszta, tekst);
         if (strcmp(polecenie, "\0") == 0){
@@ -131,7 +131,7 @@ int main() {
                 exit(1);
             }
         }
-        i++;
+        z++;
     }
     return 0;
 }
@@ -206,5 +206,5 @@ void Cd(char resztaStringa[]){
 }
 
 void History(){
-    for (int k=0; k<i; k++) printf("%s\n",history[k]);
+    for (int k=0; k<z; k++) printf("%s\n",history[k]);
 }
