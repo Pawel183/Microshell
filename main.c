@@ -26,16 +26,14 @@ int isDir(const char* fileName){
 }
 
 void Help();
-void Touch(char resztaStringa[]);
 void Cat(char resztaStringa[]);
-void Ls(char resztaStringa[]);
 void Echo(char resztaStringa[]);
 void Cd(char resztaStringa[]);
 void History();
 
-char history[25][25];
+char history[100][100];
 char sciezka[100];
-char user[25];
+char user[100];
 extern char *cuserid(char *);
 FILE *fp;
 
@@ -65,18 +63,30 @@ void KopiujPoSpacji(char* dest, char* src) {
 }
 
 int main() {
-    getcwd(sciezka, sizeof(sciezka));
     cuserid(user);
     char polecenie[100];
     char reszta[100];
     char tekst[100];
 
     while(TRUE){
+        getcwd(sciezka, sizeof(sciezka));
         if (k==0) {
             printf("[" CYN "%s" RESET ":" RED "%s" RESET "]\n" GRN "$ " RESET,user,sciezka);
         }
         fgets(tekst, 100, stdin);
         tekst[strcspn(tekst, "\n")] = 0;
+        char tekstBezSpacji[100];
+        int i=0,j=0;
+        while(isspace(tekst[i])) i++;
+        while(tekst[i] != '\0') {
+            if(!isspace(tekst[i]) || (isspace(tekst[i]) && !isspace(tekst[i-1]))) {
+                tekstBezSpacji[j] = tekst[i];
+                j++;
+            }
+            i++;
+        }
+        tekstBezSpacji[j] = '\0';
+        strcpy(tekst, tekstBezSpacji);
         strcpy(history[i], tekst);
         KopiujDoSpacji(polecenie, tekst);
         KopiujPoSpacji(reszta, tekst);
@@ -86,15 +96,9 @@ int main() {
         }
         if (strcmp(polecenie, "help") == 0){
             Help();
-        } else if (strcmp(polecenie, "touch") == 0){
-            Touch(reszta);
         } else if (strcmp(polecenie, "cat") == 0){
             Cat(reszta);
             continue;
-        } else if (strcmp(polecenie, "ls") == 0){
-            Ls(reszta);
-        } else if (strcmp(polecenie, "echo") == 0){
-            Echo(reszta);
         } else if (strcmp(polecenie, "cd") == 0){
             Cd(reszta);
         } else if (strcmp(polecenie, "history") == 0){
@@ -140,13 +144,9 @@ void Help(){
     printf("cat 'nazwa_pliku'\n");
     printf("cat > 'nazwa_pliku' (wpisac EOF, zeby wyjsc i zapisac plik)\n");
     printf("cat >> 'nazwa_pliku' (wpisac EOF, zeby wyjsc i dopisac do pliku)\n");
-    printf("ls , ls -a , ls -all\n");
     printf("cd 'sciezka' , cd ..  ,  cd ~ \n");
-    printf("help, touch, echo, history, exit, clear\n");
-}
-
-void Touch(char resztaStringa[]){
-    fp = fopen(resztaStringa,"w");
+    printf("history\n");
+    printf("help, exit, clear\n");
 }
 
 void Cat(char resztaStringa[]){
@@ -197,36 +197,12 @@ void Cat(char resztaStringa[]){
     }
 }
 
-void Ls(char resztaStringa[]){
-    DIR *d;
-    struct dirent *dir;
-    d = opendir(".");
-    if ((d)&&((strcmp(resztaStringa,"-a")==0) || (strcmp(resztaStringa,"-all")==0))){
-        while ((dir = readdir(d)) != NULL) {
-            printf("%s\n", dir->d_name);
-        }
-        closedir(d);
-    } else if (d) {
-        while ((dir = readdir(d)) != NULL) {
-            if(dir->d_name[0] != '.') {
-                printf("%s\n", dir->d_name);
-            }
-        }
-        closedir(d);
-    }
-}
-
-void Echo(char resztaStringa[]){
-    printf("%s\n", resztaStringa);
-}
-
 void Cd(char resztaStringa[]){
     if (strcmp(resztaStringa, "~") == 0) chdir(getenv("HOME"));
     else if (strcmp(resztaStringa, "..") == 0) chdir("..");
     else if (chdir(resztaStringa) == -1)
         printf("cd: %s: No such file or directory\n",resztaStringa);
     else chdir(resztaStringa);
-    getcwd(sciezka, sizeof(sciezka));
 }
 
 void History(){
