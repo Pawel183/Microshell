@@ -62,11 +62,16 @@ void KopiujPoSpacji(char* dest, char* src) {
     *dest = '\0';
 }
 
+char poprzedniaSciezka[100];
+int q=0;
+
 int main() {
     cuserid(user);
     char polecenie[100];
     char reszta[100];
     char tekst[100];
+
+    getcwd(poprzedniaSciezka, sizeof(poprzedniaSciezka));
 
     while(TRUE){
         getcwd(sciezka, sizeof(sciezka));
@@ -198,11 +203,28 @@ void Cat(char resztaStringa[]){
 }
 
 void Cd(char resztaStringa[]){
-    if (strcmp(resztaStringa, "~") == 0) chdir(getenv("HOME"));
-    else if (strcmp(resztaStringa, "..") == 0) chdir("..");
-    else if (chdir(resztaStringa) == -1)
+    if (strcmp(resztaStringa, "~") == 0){
+        getcwd(poprzedniaSciezka, sizeof(poprzedniaSciezka));
+        chdir(getenv("HOME"));
+        q++;
+    } else if (strcmp(resztaStringa, "..") == 0) {
+        getcwd(poprzedniaSciezka, sizeof(poprzedniaSciezka));
+        chdir("..");
+        q++;
+    } else if (strcmp(resztaStringa, "-") == 0) {
+        if (q==0) printf("bash: cd: OLDPWD not set\n");
+        else {
+            printf("%s\n", poprzedniaSciezka);
+            chdir(poprzedniaSciezka);
+        }
+    } else if (chdir(resztaStringa) == -1) {
+        getcwd(poprzedniaSciezka, sizeof(poprzedniaSciezka));
         printf("cd: %s: No such file or directory\n",resztaStringa);
-    else chdir(resztaStringa);
+        q++;
+    } else {
+        chdir(resztaStringa);
+        q++;
+    }
 }
 
 void History(){
