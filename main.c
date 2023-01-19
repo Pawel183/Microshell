@@ -2,14 +2,11 @@
 #include <string.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <dirent.h>
-#include <fcntl.h>
-#include <errno.h>
 #include <sys/stat.h>
-#include <sys/types.h>
 #include <sys/wait.h>
 #include <sys/utsname.h>
 #include <pwd.h>
+#include <ctype.h>
 
 #define CYN   "\x1B[36m"
 #define RED   "\x1B[31m"
@@ -31,14 +28,8 @@ void Echo(char resztaStringa[]);
 void Cd(char resztaStringa[]);
 void History();
 
-char history[100][100];
-char sciezka[100];
-char user[100];
 extern char *cuserid(char *);
 FILE *fp;
-
-int z=0;
-int k=0;
 
 void KopiujDoSpacji(char* dest, char* src) {
     while (*src && *src != ' ') {
@@ -62,8 +53,13 @@ void KopiujPoSpacji(char* dest, char* src) {
     *dest = '\0';
 }
 
+char history[100][100];
+char sciezka[100];
+char user[100];
 char poprzedniaSciezka[100];
 int q=0;
+int z=0;
+int k=0;
 
 int main() {
     cuserid(user);
@@ -82,7 +78,9 @@ int main() {
         tekst[strcspn(tekst, "\n")] = 0;
         char tekstBezSpacji[100];
         int i=0,j=0;
-        while(isspace(tekst[i])) i++;
+        while(isspace(tekst[i])) {
+            i++;
+        }
         while(tekst[i] != '\0') {
             if(!isspace(tekst[i]) || (isspace(tekst[i]) && !isspace(tekst[i-1]))) {
                 tekstBezSpacji[j] = tekst[i];
@@ -99,6 +97,8 @@ int main() {
             k=0;
             continue;
         }
+
+
         if (strcmp(polecenie, "help") == 0){
             Help();
         } else if (strcmp(polecenie, "cat") == 0){
